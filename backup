@@ -1,0 +1,86 @@
+    def get_output(self, flags: dict = []) -> str:
+        """
+        Called by the GameModel to determine the actual text output of this Desc. Is given access to the current state
+        of the GameModel's flags in case there is some kind of condition in this Desc (EG, if an item is still present)
+
+        :param flags: a dictionary of the flags and their current state in the game. The Desc may check certain flags in
+        order to determine its output.
+        :return: the text to be outputted to the screen/player
+        """
+        if not self.has_condition:
+            return self.text
+        else:
+            output = str()
+            inside_bracket = False  # TODO really need to nail down names
+            reading_conditions = False
+            raw_conditions = str()
+            conditions_result = False
+
+            def evaluate_conditions():
+                """
+                A helper method used to parse the text conditions and determine if the bracketed text should be
+                displayed.
+
+                :return: The result of ANDing all the conditions.
+                """
+                all_conditions = raw_conditions.split(',')
+                # print(all_conditions)
+                for cond in all_conditions:
+                    if evaluate(cond):  # helpers in helpers
+                        pass # keep looping
+                    else:
+                        return False  # one False is enough
+
+                return True  # if we got to the end, there are no Falses
+            # end evaluate_conditions method
+
+            def evaluate(cond: str):
+                """
+                This might be too many helpers
+
+                :param cond: the string of a single condition
+                :return: Whether this single condition is True or False
+                """
+                cond_split = cond.split(" ")
+                flag_key = cond_split[0]
+                operator = cond_split[1]
+                value = cond_split[2] # if there's a trailing space there will be a [3] but we don't need it?
+
+                if operator == ConditionOperators.EQUALS:
+                    return str(flags[flag_key]) == value  # important to str() the flag
+                elif operator == ConditionOperators.NOT_EQUALS:
+                    return str(flags[flag_key]) != value
+                else:
+                    print("ERROR: operator '", operator, ", not recognized for output in Desc", self.key)
+                    return False  # TODO exception instead?
+            # end evaluate
+
+            for ch in self.text:
+                if inside_bracket:
+                    if reading_conditions:  # reading the conditions
+                        if ch == ConditionChars.TEXT_START: # time to parse and evaluate the conditions
+                            reading_conditions = False
+                            conditions_result = evaluate_conditions() # helper method for clarity
+                        else: # reading the conditions
+                            raw_conditions = raw_conditions + ch
+                    else:  # reading the text itself
+                        if ch == ConditionChars.CLOSE_BRACKET:
+                            # this means we've gotten to the end of this expression; reset everything
+                            inside_bracket = False
+                            raw_conditions = str()
+                            conditions_result = False
+                        elif conditions_result:
+                            output = output + ch
+                        else:  # if the conditions were False
+                            pass  # do nothing?
+                else:  # if not inside_bracket
+                    # we're currently reading normal text, so unless we see a '[', just add the char to output
+                    if ch == ConditionChars.OPEN_BRACKET:
+                        inside_bracket = True
+                        reading_conditions = True
+                    else:
+                        output = output + ch
+            # end for loop
+
+            return output
+    # end get_output function

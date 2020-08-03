@@ -1,0 +1,104 @@
+7/27/20 - move setup for descs/flags/rooms/etc to separate files (eg "room_data")
+        - also create the event class
+        - refactor these classes so that they create objects that each encapsulate all of their functions so that they
+                can be used by the game_model class later?
+        - create GameModel class (oh shit CamelCase)
+        - create very simple test scenario
+
+7/28/20 - events should be good for now. bring other classes up to new standard, and make game_model
+        - OMG you can specify parameter types WTF (or can you, idek)
+        - should I put the text parsing patterns into an enum?
+        - should I put the text parsing logic into the Command class?
+        - oh shit put the include function into a utility module and make it flexible
+        - fix all of my documentation comments i guess
+        - redoing desc to bring it in line with other stuff (eg an actual class, and _data file)
+        - should the current game_model be a class variable in these element classes? hmm
+        - i added 'descs' to pycharm's library, lol
+        - oh fuck i fucked up 'is' vs '==' again (possible overcorrection, who knows)
+        - looks like i fucked up how to actually use global variables (or 'module level' as i've been calling them
+            IMPORTANT: you can _read_ global variables implicitly, but you must be explicit to _modify_ them
+
+        - time to flesh out a GameModel (lmao forgot about rooms)
+        - when do i open a trello? fuck it i'll do it right now
+
+7/29/20 - STRIKE whoops i didn't finish refactoring the room file (the current layer be tracked in an outside flag)
+        - how am I actually going to implement the monster? just using flags and events? will probably need events that
+            are waiting/listening rather than being triggered only by commands
+        - maybe all of the _load parameters that are set to "default" by default should be set to "hardcoded" like flags
+        - oh shit I had it backwards - the model should ask the controller for input during the gameplay loop.
+        - TODO who should actually be listening to player input? pygame has stuff for that so I've assumed the view
+        - here's my thoughts on text display areas / categories:
+                * main: room description  TODO conflicts with __main__ method???
+                * event: things that happen without changing rooms, eg "You take the book."
+                * input: "What will you do?" or "Next >>>"
+        - the GameModel will store and update these, and pass them to the GameController when needed (or on every loop?)
+        - OMG you can indicate return types
+        - OMG you can import the typing module to declare what types will be in a data structure - pc_game_model is
+            using it for now
+        - I put all of the code into directories and pycharm auto-updated references, cool
+        - possible thought for monster implementation: event2 / status / whatever action area to print monster-stuff to
+        - status could cover stuff like "you are still carrying the flask" or whatever
+        - oh FUCK two way dependencies are bad LMAO
+        - okay what we're gonna do is have the game object class definitions not know about the _data files - the model
+            will use them directly. Refactoring tiiiiiiiiiiiime
+        - putting the _data code into classes will make importing cleaner I guess (maybe instantiating would be good?)
+        - switching to a special include_ method in each _data file to make adding objects faster
+
+        - IMPORTANT: the GameModel most likely needs it's own set of commands, separate from room-specific ones, for
+            things like the menu, inventory items (that can be moved from room to room), etc. This should be able to be
+            changed by events (eg when you pick up an item, the command to drop it is readied). They can still sit in
+            the same dict, they just won't be associated with rooms. For now, let's say they're checked _after_ all the
+            room-specific commands)
+
+7/30/20 - Oh yeah, it occurred to me last night that remembered_events can just be in the flags - it doesn't have to be
+            its own instance variable for the GameModel
+        - It might be a good idea to clarify the names of methods that return KEYS for objects rather than the objects
+            themselves
+        - The order that flags are defined/added to lists DOES matter
+        - OH FUCK events don't need to know their command, they need to know the _input_ that triggered them
+        -holy shit i was able to make an actual executable file and it fucking WORKED
+        - The input_text and event_text fields might have to have some special code to be reset periodically - EG return
+                to "What will you do?" without being told to by every single event
+        -I'm thinking some kind of "routine" or "cleanup" or "update" event at the end of the game loop, which monitors
+            whats on those text fields, as well as other stuff. This way it's modifiable in the event_data rather than
+            being hardcoded.
+        -also add trigger_event method to PCGameModel (for when events call other events)
+        -i keep stressing about what order to put variables/methods in, aaaaaaaaaaaaaaaaaaaaa
+        -I'm moving the TextLocationKey class to the game_model file
+        -TODO I'm using input_text in two different ways in different places, could be a problem later?
+
+7/31/20 - here's my idea for conditional text in Descs:
+            * add a bool to Descs so they know if they have conditions (saves time for Descs that don't)
+            * in Desc.get_output(), check that bool, if they have conditions, do the following:
+                * read through the text char by char, adding each to the return string until you reach the end, OR:
+                * you find the condition tag start '[', in which case you pause adding to the return string and start
+                       reading the conditions. Conditions will look like
+                       [flag_key_1 == value_1, flag_key_2 != value_2 :  # TODO more or less complex?
+                       Conditions are separated by commas, ALL of the conditions will need to be true in order for the
+                       associated text to be shown.  # TODO consider or, nested conditions, etc
+                * parse the conditions; if they're true, add the text to the return string. if false, skip to the end
+                       of the conditional text and then resume as normal.
+
+        - I hope any of that made sense, basically the Desc text string will look like this...
+            "This text will always show [current_location == test_rm_3:This text will only show in the right room.]"
+        - OH FUCK i need to be able to put the values of flags in a desc, in or out of a condition, AND conditions
+            should have the ability to have two text outputs - for True and False
+        - putting the value of a flag in a desc should look like "This if the value of the flag <flag_key>"
+
+8/01/20 - starting to think about the GameView - aw jeez. I'm rethinking the game loop maybe - maybe it shouldn't be a
+            loop and it should just be a function called by the controller (triggered by the view)? That way it's the
+            view looping. (WOW, it was easier to do that than I thought...)
+        - GameView ideas...
+            * pygame window loops constantly (speed limited?), it can handle the player typing/deleting, and send input
+                to the controller when needed, who will send it to the model. The model will return the text, and the
+                controller will return it to the view.
+            * the pygame window will be split into text sections (** I need to rename the old "input" text location to
+                "prompt"): main, event, prompt, and player-input (maybe an 'all' text location or something like that?)
+            * after the model has processed input, the pygame window will be refreshed completely: fill it with black,
+            then write each text string to the appropriate location on screen
+            * apparently pygame can only write text one line at a time so this may get annoying (re-split the text?)
+
+8/02/20 - whoops i forgot to start taking notes today lol
+        - I got text to show on screen, starting at the right place, now I have to make it wraparound and such
+        - it's a really good thing that I checked the documentation and found out that the Font class can tell you how
+            much space it would take to write text
