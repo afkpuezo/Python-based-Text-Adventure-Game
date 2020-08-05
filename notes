@@ -102,3 +102,12 @@
         - I got text to show on screen, starting at the right place, now I have to make it wraparound and such
         - it's a really good thing that I checked the documentation and found out that the Font class can tell you how
             much space it would take to write text
+
+8/03/20 - First day of revature training today wooooooo and I still want to work on this
+        - I tweaked the font size to be based on the window size, and the text area sizes and locations are based on the
+            font size
+        - Oh yeah my window was locking up because I wasn't dealing with the pygame events
+        - View is coming along well, just need to get cursor going and then hook it up to a controller
+
+8/04/20 - Man I'm actually tired now
+        - I got the cursor working nicely (might be some ramifications later), next (tomorrow) the controller

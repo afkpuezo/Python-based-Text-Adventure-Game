@@ -7,6 +7,7 @@ TODO to have the model call the controller when text changes
 
 started 7/28/20 by Andrew Curry
 """
+from typing import Dict
 
 
 class TextLocationKey: # TODO these need to move to a different file or something, too many different things use them
@@ -79,10 +80,11 @@ class GameModel:
         """
         pass
 
-    def update(self, input_text: str):
+    def update(self, input_text: str) -> Dict[str, str]:
         """
         The core gameplay logic. Called by the controller when there's input to be processed.
-        :return:
+
+        :return: The dict of text(s) to be displayed on screen.
         """
         pass
 

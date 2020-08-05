@@ -4,7 +4,7 @@ by other classes.
 
 started  08/01/20
 """
-
+from typing import Dict
 
 class GameView:
     """
@@ -12,7 +12,7 @@ class GameView:
     by other classes.
     """
 
-    def game_launched(self):
+    def game_launched(self, output_text: Dict[str, str]):
         """
         What to do when the game is launched.
         TODO is this the right way to split this up?
