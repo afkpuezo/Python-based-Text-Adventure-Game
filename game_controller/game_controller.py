@@ -20,9 +20,10 @@ class GameController:
         """
         pass
 
-    def game_closing(self):
+    def player_quit(self):
         """
-        What to do when the game is being closed/quit by the player.
+        What to do when the game is being closed/quit by the player. This one should be called by the model when the
+        player has chosen to quit.
 
         :return:
         """
@@ -33,8 +34,8 @@ class GameController:
         Sends the given input text to the GameModel (calls the update method). Returns the dict of text(s) to be
         displayed on screen.
 
-        :param input_text: the dict of text(s) to be displayed on screen.
-        :return:
+        :param input_text: the input text typed by the player
+        :return: the updated output text(s)
         """
         pass
 # end GameController class/interface/whatever

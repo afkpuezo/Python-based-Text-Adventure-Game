@@ -4,6 +4,7 @@ This file is for code relating to commands - they connect an expected input patt
 - Started 5/25/20, by Andrew Curry
 - reworked 7/28/20, to put the text parsing logic in here, as well as minor refactoring and including how command data
         is loaded
+- tweaked text parsing to allow for multiple possible string literal matches (eg [["get, "take], "ye", "flask"]
 """
 # imports ------
 from enum import Enum
@@ -95,7 +96,8 @@ class Command:
 
         """
         Determines if the given player input matches with this command. NOTE: this was transferred from another module
-        so there may be problems with this code later. TODO
+        so there may be problems with this code later.
+        Also this used to make everything lower case but I made the view force lower case so it's unneeded?
 
         :param input_list: a list of strings, each string being a word from the player's input
         :return: True if the given input matches this command, False otherwise
@@ -103,14 +105,10 @@ class Command:
         # basically keep going through the input and command until we find something that doesn't match
         # or if we find certain escape sequences in the command (like ANY)
 
-        #pattern = command.pattern
         p_length = len(self.pattern) # does this actually save time?
         input_length = len(input_list)
 
-        # print("DEBUG check_command pattern is:", pattern)
-        # print("DEBUG check_command input_list is:", input_list)
-
-        for i in range(0, p_length):
+        for i in range(0, p_length): # dont use for p in self.pattern cuz we need to get input_list[i] later too
             p = self.pattern[i]  # the current pattern element #TODO better name than p?
 
             if p == PatElm.ANY_NONE_OKAY:
@@ -162,8 +160,14 @@ class Command:
                     return False
 
             # at this point we're only looking for exact matches
-            # print("DEBUG got to the exact word check - p and word are:", p, word)
-            if p.lower() == word.lower():
+            # OR lists of possible matches (first cuz lists can't .lower())
+            if isinstance(p, list):
+                if word in p:
+                    continue
+                else:
+                    return False
+
+            if p == word:
                 continue
             else:
                 return False

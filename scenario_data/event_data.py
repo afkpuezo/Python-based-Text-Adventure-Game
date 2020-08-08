@@ -7,7 +7,7 @@ put into a class 7/29/20
 """
 # imports --------
 from game_model.game_objects.event import Event
-from game_model.game_model import TextLocationKey
+from utilities.game_enums import TextLocationKey
 from scenario_data.flag_data import BasicFlagKeys
 
 # from typing import Dict
@@ -84,13 +84,13 @@ class EventDataHandler:
                 event_text_ticks_left = event_text_ticks_left - 1
             model.all_flags[BasicFlagKeys.EVENT_TEXT_TICKS_LEFT] = event_text_ticks_left  # saves the change
 
-            input_text_ticks_left: int = model.all_flags[BasicFlagKeys.INPUT_TEXT_TICKS_LEFT]
+            input_text_ticks_left: int = model.all_flags[BasicFlagKeys.PROMPT_TEXT_TICKS_LEFT]
             if input_text_ticks_left == 0:  # time to change
-                model.change_text(TextLocationKey.PROMPT, "default_input_text_desc", -1)
+                model.change_text(TextLocationKey.PROMPT, "default_prompt_text_desc", -1)
                 input_text_ticks_left = -1
             elif input_text_ticks_left > 0:  # not done yet, just tick
                 input_text_ticks_left = input_text_ticks_left - 1
-            model.all_flags[BasicFlagKeys.INPUT_TEXT_TICKS_LEFT] = input_text_ticks_left  # saves the change
+            model.all_flags[BasicFlagKeys.PROMPT_TEXT_TICKS_LEFT] = input_text_ticks_left  # saves the change
         # end update_ev
         include_event("update_ev", update_ev)
 
@@ -99,7 +99,7 @@ class EventDataHandler:
         include_event("didnt_understand_ev", didnt_event)
 
         def quit_event(model, input_text: str):
-            model.playing = False  # TODO this will be more complicated later
+            model.player_quit()  # TODO this will be more complicated later
         include_event("quit_ev", quit_event)
 
         # test events -------------------------------------------------------------

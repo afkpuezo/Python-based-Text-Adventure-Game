@@ -8,18 +8,7 @@ TODO to have the model call the controller when text changes
 started 7/28/20 by Andrew Curry
 """
 from typing import Dict
-
-
-class TextLocationKey: # TODO these need to move to a different file or something, too many different things use them
-    """
-    An Enum* for the keys that indicate where text is to be shown
-    """
-    MAIN = "MAIN_TEXT_LOCATION"
-    EVENT = "EVENT_TEXT_LOCATION"
-    PROMPT = "PROMPT_TEXT_LOCATION"
-    INPUT = "INPUT_TEXT_LOCATION"
-# end TextLocationKey
-
+# from game_controller.game_controller import GameController
 
 class GameModel:
 
@@ -29,18 +18,18 @@ class GameModel:
     TODO description
     """
 
-    def game_launched(self):
+    def game_launched(self) -> Dict[str, str]:
         """
-        What to do when the game is launched/opened.
+        What to do when the game is launched/opened. Returns the initial texts to be displayed.
         TODO necessary?
 
-        :return:
+        :return: The initial output texts
         """
         pass
 
-    def game_closing(self):
+    def player_quit(self):
         """
-        What to do when the user is quitting.
+        What to do when the user is quitting. Takes care of business in the model and tells the controller.
         TODO necessary?
 
         :return:
@@ -93,6 +82,16 @@ class GameModel:
         Called by the controller to determine if the game has been quit.
 
         :return: True if gameplay will continue, False otherwise
+        """
+        pass
+
+    def set_controller(self, controller):
+        """
+        Called by the controller to connect itself to the model.
+        (I don't know if this is necessary but it seems safer?)
+
+        :param controller: The GameController
+        :return:
         """
         pass
 

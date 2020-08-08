@@ -5,8 +5,9 @@ know what else to call this class. It inherits/implements the GameModel class/in
 Started 7/29/20
 """
 # imports
-from game_model.game_model import GameModel, TextLocationKey
-from game_controller.game_controller import GameController
+from game_model.game_model import GameModel
+from utilities.game_enums import TextLocationKey
+# from game_controller.game_controller import GameController
 
 from game_model.game_objects.command import Command
 from game_model.game_objects.desc import Desc
@@ -39,23 +40,26 @@ class PCGameModel(GameModel):
 
     # begin GameModel stuff -------
 
-    def game_launched(self):
+    def game_launched(self) -> Dict[str, str]:
         """
-        What to do when the game is launched/opened.
-        TODO necessary?
+        What to do when the game is launched/opened. Returns the initial texts to be displayed.
 
         :return:
         """
-        print("PCGameModel game_launched not yet implemented")
+        self.load_scenario_data()  # TODO i assume this will change later
+        return self.texts
+    # end game_launched
 
-    def game_closing(self):
+    def player_quit(self):
         """
-        What to do when the user is quitting.
-        TODO necessary?
+        What to do when the user is quitting. Takes care of business in the model and tells the controller. (Currently)
+        called by the quit event.
 
         :return:
         """
-        print("PCGameModel game_closing not yet implemented")
+        self.playing = False  # is this still important?
+        self.controller.player_quit()
+    # end player_quit
 
     def load_scenario_data(self, scenario: str = "default"):
         """
@@ -71,7 +75,7 @@ class PCGameModel(GameModel):
             return False
 
         # assume scenario is default
-        self.data_loaded = self.load_default_scenario() # helper method
+        self.data_loaded = self.load_default_scenario()  # helper method
 
         return self.data_loaded
 
@@ -99,8 +103,8 @@ class PCGameModel(GameModel):
             self.playing = True
             # load the text information for the current/starting room before looping
             self.change_text(TextLocationKey.MAIN, self.get_current_room_desc_key())
-            self.change_text(TextLocationKey.EVENT, "blank_desc")  # FIXME obviously temporary
-            self.change_text(TextLocationKey.PROMPT, "default_input_text_desc")  # FIXME obviously temporary
+            self.change_text(TextLocationKey.EVENT, "initial_event_text_desc")
+            self.change_text(TextLocationKey.PROMPT, "initial_prompt_text_desc")
             # self.draw_all_output_text()
             return self.texts
         else:
@@ -109,15 +113,25 @@ class PCGameModel(GameModel):
             return False
     # end game_start method
 
+    def set_controller(self, controller):
+        """
+        Called by the controller to connect itself to the model.
+        (I don't know if this is necessary but it seems safer?)
+
+        :param controller: The GameController
+        :return:
+        """
+        self.controller = controller
+    # end set_controller method
+
     # begin PCGameModel stuff ----------
 
     DEFAULT_STARTING_TEXT = ""
 
-    def __init__(self, controller: GameController):
+    def __init__(self):
         """
         The constructor. Declares instance variables for the game objects but does not fill them (load_scenario_data
         does that).
-        :param controller: the GameController that...controls this model
         """
 
         # game logic variables/objects - why am I stressing about what order to declare these in?
@@ -136,7 +150,7 @@ class PCGameModel(GameModel):
         self.texts[TextLocationKey.PROMPT] = PCGameModel.DEFAULT_STARTING_TEXT
 
         # non-game logic variables/objects
-        self.controller: GameController = controller
+        self.controller: GameController = None  # will be set directly by the controller itself
         self.data_loaded = False  # has data been loaded yet?
         self.playing = False  # indicates if the game is started and the player is able to do things in-game
 
@@ -269,7 +283,7 @@ class PCGameModel(GameModel):
             if loc_key == TextLocationKey.EVENT:
                 self.all_flags[BasicFlagKeys.EVENT_TEXT_TICKS_LEFT] = ticks_left
             elif loc_key == TextLocationKey.PROMPT:
-                self.all_flags[BasicFlagKeys.INPUT_TEXT_TICKS_LEFT] = ticks_left
+                self.all_flags[BasicFlagKeys.PROMPT_TEXT_TICKS_LEFT] = ticks_left
 
         self.texts[loc_key] = self.all_descs[desc_key].get_output(self.all_flags)
     # end change_text method

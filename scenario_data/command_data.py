@@ -73,7 +73,7 @@ class CommandDataHandler:
         include_command("test_1_to_2_cmd", "test_1_to_2_ev", ["move", PatElm.END])
         include_command("test_2_to_3_cmd", "test_2_to_3_ev", ["move", PatElm.END])
         include_command("test_3_to_1_cmd", "test_3_to_1_ev", ["move", PatElm.END])
-        include_command("test_dance_cmd", "test_dance_ev", ["dance", PatElm.END])
+        include_command("test_dance_cmd", "test_dance_ev", [["dance", "jig", "celebrate"], PatElm.END])
         include_command("test_toggle_cmd", "test_toggle_ev", ["toggle", PatElm.END])
         include_command("test_look_at_toggle_cmd", "test_look_at_toggle_ev", ["look", "at", "toggle", PatElm.END])
         include_command("test_rm_3_toggle_cmd", "test_rm_3_toggle_ev", ["check", "toggle", "3", PatElm.END])

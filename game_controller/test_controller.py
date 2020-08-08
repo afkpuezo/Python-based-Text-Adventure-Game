@@ -5,7 +5,7 @@ started 7/29/20
 """
 # imports
 from game_controller.game_controller import GameController
-from game_model.game_model import TextLocationKey
+from utilities.game_enums import TextLocationKey
 from game_model.pc_game_model import PCGameModel
 from game_model.game_model import GameModel
 
@@ -36,10 +36,10 @@ class TestController(GameController):
             output_text = self.model.update(input_text)
             self.print_text(output_text)
 
-        self.game_closing()
+        self.player_quit()
     # end game_launched method
 
-    def game_closing(self):
+    def player_quit(self):
         """
         What to do when the game is being closed/quit by the player.
 

@@ -11,8 +11,8 @@ https://pygame.readthedocs.io/en/latest/4_text/text.html
 """
 # imports -----------
 from game_view.game_view import GameView
-from game_controller.game_controller import GameController
-from game_model.game_model import TextLocationKey  # TODO this class should be moved probably
+# from game_controller.game_controller import GameController
+from utilities.game_enums import TextLocationKey
 from typing import Dict  # lets try this again
 from typing import List
 
@@ -98,10 +98,11 @@ class PCPygameGameView(GameView):
     ENTER_KEYS: List[int] = [K_KP_ENTER, K_RETURN]
 
     # stuff from GameView ------------------------
-    def game_launched(self, output_text: Dict[str, str]):
+    def game_launched(self, output_texts: Dict[str, str]):
         """
         Initializes pygame and opens the window.
 
+        :param output_texts: The initial text to be displayed
         :return: True if initialization successful, false otherwise.
         """
         pygame.init()
@@ -110,28 +111,40 @@ class PCPygameGameView(GameView):
         self.font = pygame.font.SysFont(None, WindowStats.FONT_SIZE)
 
         # self.show_text_boxes()
-        self.draw_all_output_text(output_text)
+        self.draw_all_output_text(output_texts)
 
         self.game_view_loop()
     # end game_launched method
 
     def game_closing(self):
         """
-        What to do when the user quits. TODO IDK if this is even a thing
+        What to do when the user quits. Called by the controller when the model indicates the player has decided to
+        quit. Currently it just sets the self.running to False, so the loop will stop and the window will close.
 
         :return:
         """
-        pass
+        self.running = False
+    # end player_quit method
+
+    def set_controller(self, controller):
+        """
+        Called by the controller to connect itself to the view.
+        (I don't know if this is necessary but it seems safer?)
+
+        :param controller: The GameController
+        :return:
+        """
+        self.controller = controller
+    # end set_controller method
 
     # stuff specifically for PCPygameGameView -------------
 
-    def __init__(self, controller: GameController):
+    def __init__(self):
         """
         The constructor. Will not actually initialize pygame stuff or open the window frame.
 
-        :param controller: The GameController for this View.
         """
-        self.controller: GameController = controller
+        self.controller = None # will be set directly by the controller itself
         self.screen: pygame.Surface = None
         self.font: pygame.Font = None
         self.running = False  # does this need to be an instance attribute? or should it just be in the _loop method?
@@ -234,53 +247,56 @@ class PCPygameGameView(GameView):
         if clear_before:
             self.screen.fill(WindowStats.BACKGROUND_COLOR, self.text_rects[TextLocationKey.INPUT])
 
-        # are we going to need to wraparound (more than one line?)
-        if self.font.size(text)[0] < WindowStats.TEXT_LINE_LENGTH:
-            text_image = self.font.render(text, True, WindowStats.TEXT_COLOR)
-            self.screen.blit(text_image, anchor)
-        else:
-            # break it into lines that are short enough
-            # total_height = 0  # what is the height of everything we've written?
-            words: List[str] = text.split(" ")
-            current_line: str = str()
-            current_line_length: int = 0
-            lines: List[str] = list()  # TODO should these 2 lists (and 1 int) be one list with lines + heights paired?
-            line_heights: List[int] = [0]
-            num_lines: int = 0
-            out_of_space = False
+        # break it into lines that are short enough
+        # total_height = 0  # what is the height of everything we've written?
+        words: List[str] = text.split(" ")
+        current_line: str = str()
+        current_line_length: int = 0
+        lines: List[str] = list()  # TODO should these 2 lists (and 1 int) be one list with lines + heights paired?
+        line_heights: List[int] = [0]
+        num_lines: int = 0
+        out_of_space = False
+        next_line_height = 0
 
-            for word in words:
-                # would adding this word to the current line be too long?
-                word_length = self.font.size(word + " ")[0]  # include the space after each word
-                current_line_length += word_length
-                if current_line_length < WindowStats.TEXT_LINE_LENGTH:  # if we're good on this line
-                    current_line += word + " "
-                else:  # time for a new line
-                    lines.append(current_line)
-                    num_lines += 1
-                    next_line_height = line_heights[-1] + self.font.get_linesize() + WindowStats.SPACE_BETWEEN_LINES
-                    # determine if we have room for at least one more line
-                    # i'm not sure why I have to count the font linesize again but it makes things fit nicely
-                    if next_line_height + self.font.get_linesize() < max_height:
-                        line_heights.append(next_line_height)
-                        current_line = word + " "
-                        current_line_length = word_length
-                    else:  # we're done writing lines
-                        out_of_space = True
-                        break
-            # end line-generating for loop
-
-            # OMG i didn't think to draw the last line that's been stored after the loop ends
-            if not out_of_space:
+        for word in words:
+            # would adding this word to the current line be too long?
+            word_length = self.font.size(word + " ")[0]  # include the space after each word
+            current_line_length += word_length
+            # print("DEBUG: word is", word)
+            # if word == "\n":
+            #     print("DEBUG: newline detected")
+            if (current_line_length < WindowStats.TEXT_LINE_LENGTH) and (word != "\n"):  # we're good on this line
+                current_line += word + " "
+            else:  # time for a new line
                 lines.append(current_line)
-                line_heights.append(next_line_height)
                 num_lines += 1
+                next_line_height = line_heights[-1] + self.font.get_linesize() + WindowStats.SPACE_BETWEEN_LINES
+                # determine if we have room for at least one more line
+                # i'm not sure why I have to count the font linesize again but it makes things fit nicely
+                if next_line_height + self.font.get_linesize() < max_height:
+                    line_heights.append(next_line_height)
+                    if word == '\n':  # don't actually write a newline-character or an extraneous space
+                        current_line = str()
+                        current_line_length = 0
+                    else: # start the new line with the current word
+                        current_line = word + " "
+                        current_line_length = self.font.size(current_line)
+                else:  # we're done writing lines
+                    out_of_space = True
+                    break
+        # end line-generating for loop
 
-            # now actually display it all
-            for L in range(0, num_lines):
-                text_image = self.font.render(lines[L], True, WindowStats.TEXT_COLOR)
-                self.screen.blit(text_image, (anchor[0], anchor[1] + line_heights[L]))
-            # end blitting lines for loop
+        # OMG i didn't think to draw the last line that's been stored after the loop ends
+        if not out_of_space:
+            lines.append(current_line)
+            line_heights.append(next_line_height)
+            num_lines += 1
+
+        # now actually display it all
+        for L in range(0, num_lines):
+            text_image = self.font.render(lines[L], True, WindowStats.TEXT_COLOR)
+            self.screen.blit(text_image, (anchor[0], anchor[1] + line_heights[L]))
+        # end blitting lines for loop
     # end draw_one_text_area
 
     def game_view_loop(self):
@@ -305,7 +321,12 @@ class PCPygameGameView(GameView):
                         self.input_text = self.input_text[:-1]  # slice off the last character (safe when empty)
                         updated_input = True
                     elif event.key in PCPygameGameView.ENTER_KEYS:
-                        output_text = self.send_text_to_controller()  # STICKY ACTUALLY DO THIS!
+                        output_text = self.send_text_to_controller()  # TODO update this later
+                        self.screen.fill(WindowStats.BACKGROUND_COLOR)
+                        self.draw_all_output_text(output_text)
+                        updated_rects.append(self.text_rects[TextLocationKey.MAIN])
+                        updated_rects.append(self.text_rects[TextLocationKey.EVENT])
+                        updated_rects.append(self.text_rects[TextLocationKey.PROMPT])
                         self.input_text = ""
                         updated_input = True
                     else:
@@ -332,7 +353,6 @@ class PCPygameGameView(GameView):
 
             # now actually _update_ the screen lmao
             pygame.display.update(updated_rects)
-            updated_rects = list()
         # end while loop
     # end game_view_loop method
 

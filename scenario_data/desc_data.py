@@ -68,9 +68,14 @@ class DescDataHandler:
 
         # utility / basic / critical Descs
         include_desc("blank_desc", "")
-        include_desc("default_input_text_desc", "What will you do?")
+        include_desc("default_main_text_desc", "This is the default main text.")
         include_desc("default_event_text_desc", "")
+        include_desc("default_prompt_text_desc", "What will you do?")
         include_desc("didnt_understand_desc", "I didn't understand that.")
+
+        include_desc("initial_main_text_desc", "This the initial main text.")
+        include_desc("initial_event_text_desc", "")
+        include_desc("initial_prompt_text_desc", "")
 
         # "specific" descs - rooms, events, etc FOR TESTS --------------------
         include_desc("test_rm_1_desc", "This is the main text for test room 1.")

@@ -111,3 +111,29 @@
 
 8/04/20 - Man I'm actually tired now
         - I got the cursor working nicely (might be some ramifications later), next (tomorrow) the controller
+
+8/05/20 - WTF i updated to pycharm 2020 and it changed my font and I can't fix it...but it's growing on me
+        - Changed it so that the controller is initialized last - the model and controller are sent to it. Controller
+            will call new methods to set the model's + view's controller variable to itself.
+            TODO can you specify constructor parameters in an interface?
+        - STRIKE okay its getting late - find a good way to set/retrieve initial text of model
+
+8/06/20 - hahaha i forgot there already is default text, I just made it blank at the start (should be menu/first room)
+        - cool that works - now get the quit event, add newline functionality to drawing text(s), and move enums like
+            TextLocationKey that both the model and view need to their own file
+        - sick i did all that, can i start making content tomorrow?
+
+8/07/20 - making notes during work lmao
+        - anyway yesterday i forgot about my idea to make commands a little more flexible - modify text parsing
+            so that patterns can have more that one specific word / "string literal" in a given position, effectively
+            an OR. For example, [["take", "get"], "ye", "flask"] - either of "take" or "get" will satisfy it, which
+            saves me a LOT of duplicate commands. [x]
+        - holy shit i should mark when i've finished things in these notes with [x] (unfinished would be [ ])
+        - I changed  text parsing so it no longer forces everything to lower case (that's done elsewhere already)
+        - okay i guess I can start making content now (for the demo/prototype/whatever)
+        - separate "default descs" from "starting descs" [x]
+        - LMAO i set up the initial texts twice, i'm bad
+        - at some point I will need to tweak how the model sends text to the view, so that it can include some
+            flags/variables so that it can trigger things like "cutscenes" or screens where the player just has to
+            press enter (I'll make a trello) [ ]
+        - are room layers needed anymore? not for most things...can technically be handled just by flags right?

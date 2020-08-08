@@ -31,7 +31,7 @@ class BasicFlagKeys:
     """
     REMEMBERED_COMMANDS = "remembered_commands"
     CURRENT_LOCATION = "current_location"
-    INPUT_TEXT_TICKS_LEFT = "input_text_ticks_left"
+    PROMPT_TEXT_TICKS_LEFT = "input_text_ticks_left"
     EVENT_TEXT_TICKS_LEFT = "event_text_ticks_left"
 
 # end BasicFlagKeys
@@ -113,7 +113,7 @@ class FlagDataHandler:
                       "test_rm_3_toggle_cmd", "didnt_understand_cmd"])
         include_flag(BasicFlagKeys.CURRENT_LOCATION, "test_rm_1")
         include_flag(BasicFlagKeys.EVENT_TEXT_TICKS_LEFT, -1)  # for now use -1 as the "don't change it" value
-        include_flag(BasicFlagKeys.INPUT_TEXT_TICKS_LEFT, -1)
+        include_flag(BasicFlagKeys.PROMPT_TEXT_TICKS_LEFT, -1)
 
         # room layer flags
         include_flag("test_rm_1" + Room.ROOM_FLAG_SUFFIX, 0)
