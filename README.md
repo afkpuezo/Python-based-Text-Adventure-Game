@@ -5,4 +5,4 @@ I believe I did a good job coding a flexible system that could easily support a 
 
 Technologies:
   - Python
-  - Pycharm
+  - Pygame
